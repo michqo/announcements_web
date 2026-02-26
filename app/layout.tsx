@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Lato, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const lato = Lato({
+  weight: ["100", "300", "400", "700", "900"],
   subsets: ["latin"],
+  variable: "--font-lato",
 });
 
 const geistMono = Geist_Mono({
@@ -28,15 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${lato.variable}`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${lato.className} ${geistMono.variable} antialiased`}
       >
         <SidebarProvider>
           <AppSidebar />
-          <main>
-            <SidebarTrigger />
-            {children}
+          <main className="flex-1 flex flex-col min-h-svh overflow-hidden">
+            <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
+              <SidebarTrigger className="-ml-1" />
+            </header>
+            <div className="flex-1 flex flex-col overflow-auto">
+              {children}
+            </div>
           </main>
         </SidebarProvider>
       </body>
