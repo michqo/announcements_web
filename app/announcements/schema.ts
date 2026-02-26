@@ -17,8 +17,9 @@ export type AnnouncementCategory = z.infer<typeof announcementCategorySchema>
 export const announcementSchema = z.object({
   id: z.string(),
   title: z.string().min(1, "Title is required"),
+  content: z.string().min(1, "Content is required"),
   publicationDate: z.date(),
-  lastUpdate: z.date(),
+  lastUpdate: z.date().optional(),
   categories: z.array(announcementCategorySchema).min(1, "At least one category is required"),
 })
 

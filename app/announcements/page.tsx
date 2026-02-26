@@ -7,6 +7,7 @@ const mockData: Announcement[] = [
   {
     id: "1",
     title: "New Playground in City Center",
+    content: "We are excited to announce the opening of a new modern playground in the heart of the city center.",
     publicationDate: new Date(2024, 4, 15, 10, 30),
     lastUpdate: new Date(2024, 4, 15, 10, 30),
     categories: ["city", "kids & family"],
@@ -14,6 +15,7 @@ const mockData: Announcement[] = [
   {
     id: "2",
     title: "Upcoming Community Festival",
+    content: "Join us for our annual community festival with live music, food stalls, and family activities.",
     publicationDate: new Date(2024, 4, 10, 9, 0),
     lastUpdate: new Date(2024, 4, 12, 14, 45),
     categories: ["community events", "culture"],
@@ -21,6 +23,7 @@ const mockData: Announcement[] = [
   {
     id: "3",
     title: "Annual Health Checkup Campaign",
+    content: "Take control of your health with our free annual checkup campaign available for all city residents.",
     publicationDate: new Date(2024, 4, 5, 8, 15),
     lastUpdate: new Date(2024, 4, 5, 8, 15),
     categories: ["health", "for seniors"],
@@ -28,6 +31,7 @@ const mockData: Announcement[] = [
   {
     id: "4",
     title: "Emergency Road Maintenance",
+    content: "Please be aware of emergency road maintenance on Main Street this weekend. Expect delays.",
     publicationDate: new Date(2024, 4, 1, 16, 20),
     lastUpdate: new Date(2024, 4, 2, 9, 10),
     categories: ["emergencies", "city"],
