@@ -1,5 +1,9 @@
+"use client"
+
 import { MapPin, Megaphone } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 import {
   Sidebar,
@@ -13,6 +17,9 @@ import {
 } from "@/components/ui/sidebar"
 
 export function AppSidebar() {
+  const pathname = usePathname()
+  const isAnnouncements = pathname.startsWith("/announcements")
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -31,14 +38,23 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/announcements">
-                    <Megaphone />
+                <SidebarMenuButton 
+                  asChild
+                  style={{ 
+                    backgroundColor: isAnnouncements ? "#FFF7D1" : undefined 
+                  }}
+                  className={cn(
+                    "transition-colors",
+                    isAnnouncements ? "text-foreground font-semibold" : "text-muted-foreground"
+                  )}
+                >
+                  <Link href="/announcements" className="flex items-center gap-3">
+                    <Megaphone className={isAnnouncements ? "text-foreground" : "text-muted-foreground"} />
                     <span>Announcements</span>
                   </Link>
                 </SidebarMenuButton>
