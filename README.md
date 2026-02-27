@@ -19,7 +19,7 @@ Dashboard for managing announcements. Built with Next.js 15, TanStack Query, and
    ```bash
    pnpm dev
    ```
-   *Make sure the API is running at `http://localhost:8000`.*
+   *Make sure the [Express API](https://github.com/michqo/announcements_api) is running at `http://localhost:8000`.*
 
 ## Key Features
 - Clean list view with data tables.
