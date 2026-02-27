@@ -55,7 +55,10 @@ export default function EditAnnouncementPage() {
     defaultValues: {
       title: announcement?.title ?? "",
       content: announcement?.content ?? "",
-      categories: announcement?.categories ?? [],
+      categories: (announcement?.categories ?? []).map((cat) => {
+        const found = categoriesData?.find((c) => String(c.id) === String(cat.id))
+        return found || cat
+      }),
       publicationDate: announcement?.publicationDate 
         ? format(new Date(announcement.publicationDate), "MM/dd/yyyy HH:mm") 
         : "",
@@ -77,7 +80,11 @@ export default function EditAnnouncementPage() {
     if (announcement) {
       form.setFieldValue("title", announcement.title || "")
       form.setFieldValue("content", announcement.content || "")
-      form.setFieldValue("categories", (announcement.categories || []) as Category[])
+      const mappedCategories = (announcement.categories || []).map((cat) => {
+        const found = categoriesData?.find((c) => String(c.id) === String(cat.id))
+        return found || cat
+      })
+      form.setFieldValue("categories", mappedCategories)
       
       let dateValue = ""
       if (announcement.publicationDate) {
@@ -92,7 +99,7 @@ export default function EditAnnouncementPage() {
       }
       form.setFieldValue("publicationDate", dateValue)
     }
-  }, [announcement, form])
+  }, [announcement, categoriesData, form])
 
   if (isLoadingAnnouncement || isLoadingCategories) {
     return (
