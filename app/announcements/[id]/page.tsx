@@ -4,7 +4,12 @@ import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useForm } from "@tanstack/react-form"
 import { z } from "zod"
-import { announcementCategorySchema, AnnouncementCategory } from "../schema"
+import { Category } from "../schema"
+import { 
+  useAnnouncement, 
+  useCategories, 
+  useUpdateAnnouncement 
+} from "@/hooks/use-announcements"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,78 +30,110 @@ import {
   useComboboxAnchor,
 } from "@/components/ui/combobox"
 import { format, parse, isValid } from "date-fns"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
-
-const categories: AnnouncementCategory[] = [
-  "city",
-  "community events",
-  "crime & safety",
-  "culture",
-  "discounts & benefits",
-  "emergencies",
-  "for seniors",
-  "health",
-  "kids & family",
-]
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function EditAnnouncementPage() {
   const { id } = useParams()
   const router = useRouter()
   const anchor = useComboboxAnchor()
 
-  const mockAnnouncements = [
-    {
-      id: "1",
-      title: "New Playground in City Center",
-      content: "We are excited to announce the opening of a new modern playground in the heart of the city center.",
-      categories: ["city", "kids & family"] as AnnouncementCategory[],
-      publicationDate: new Date(2024, 4, 15),
-    },
-    {
-      id: "2",
-      title: "Upcoming Community Festival",
-      content: "Join us for our annual community festival with live music, food stalls, and family activities.",
-      categories: ["community events", "culture"] as AnnouncementCategory[],
-      publicationDate: new Date(2024, 4, 10),
-    },
-    {
-      id: "3",
-      title: "Annual Health Checkup Campaign",
-      content: "Take control of your health with our free annual checkup campaign available for all city residents.",
-      categories: ["health", "for seniors"] as AnnouncementCategory[],
-      publicationDate: new Date(2024, 4, 5),
-    },
-    {
-      id: "4",
-      title: "Emergency Road Maintenance",
-      content: "Please be aware of emergency road maintenance on Main Street this weekend. Expect delays.",
-      categories: ["emergencies", "city"] as AnnouncementCategory[],
-      publicationDate: new Date(2024, 4, 1),
-    },
-  ]
-
-  const announcement = mockAnnouncements.find(a => a.id === id) || mockAnnouncements[0]
+  const { 
+    data: announcement, 
+    isLoading: isLoadingAnnouncement, 
+    isError: isErrorAnnouncement 
+  } = useAnnouncement(id as string)
+  const { 
+    data: categoriesData, 
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories
+  } = useCategories()
+  const updateAnnouncement = useUpdateAnnouncement()
 
   const form = useForm({
     defaultValues: {
-      title: announcement.title,
-      content: announcement.content,
-      categories: announcement.categories,
-      publicationDate: format(announcement.publicationDate, "MM/dd/yyyy HH:mm"),
+      title: announcement?.title ?? "",
+      content: announcement?.content ?? "",
+      categories: announcement?.categories ?? [],
+      publicationDate: announcement?.publicationDate 
+        ? format(new Date(announcement.publicationDate), "MM/dd/yyyy HH:mm") 
+        : "",
     },
     onSubmit: async ({ value }) => {
-      const finalValue = {
+      // The server expects category IDs as numbers and dates as ISO strings
+      // We cast to any to avoid conflict with the Announcement schema which expects full objects and Date objects
+      await updateAnnouncement.mutateAsync({
+        id: id as string,
         ...value,
-        publicationDate: parse(value.publicationDate, "MM/dd/yyyy HH:mm", new Date())
-      }
-      console.log(finalValue)
+        categories: value.categories.map((cat) => 
+          typeof cat === "object" ? Number((cat as Category).id) : Number(cat)
+        ),
+        publicationDate: parse(value.publicationDate, "MM/dd/yyyy HH:mm", new Date()).toISOString()
+      } as any)
       router.push("/announcements")
     },
   })
 
+  React.useEffect(() => {
+    if (announcement) {
+      form.setFieldValue("title", announcement.title || "")
+      form.setFieldValue("content", announcement.content || "")
+      form.setFieldValue("categories", (announcement.categories || []) as Category[])
+      
+      let dateValue = ""
+      if (announcement.publicationDate) {
+        try {
+          const d = new Date(announcement.publicationDate)
+          if (!isNaN(d.getTime())) {
+            dateValue = format(d, "MM/dd/yyyy HH:mm")
+          }
+        } catch (e) {
+          console.error("Date formatting error", e)
+        }
+      }
+      form.setFieldValue("publicationDate", dateValue)
+    }
+  }, [announcement, form])
+
+  if (isLoadingAnnouncement || isLoadingCategories) {
+    return (
+      <div className="flex flex-col flex-1 w-full p-10 bg-muted/20 items-center">
+        <div className="py-24 max-w-3xl w-full">
+          <Skeleton className="h-4 w-24 mb-4" />
+          <Skeleton className="h-12 w-64 mb-2" />
+          <Skeleton className="h-6 w-96" />
+        </div>
+        <div className="bg-background p-8 rounded-xl shadow-sm border border-border/50 max-w-3xl w-full mb-10 space-y-8">
+          <Skeleton className="h-8 w-48" />
+          <div className="space-y-6">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-40 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isErrorAnnouncement || isErrorCategories || !announcement) {
+    return (
+      <div className="flex flex-col flex-1 w-full p-10 bg-muted/20 items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-destructive mb-2">Error Loading Announcement</h2>
+          <p className="text-muted-foreground mb-6">We couldn&apos;t find the announcement you&apos;re looking for or there was a problem with the server.</p>
+          <Button onClick={() => router.push("/announcements")}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Announcements
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col flex-1 w-full p-10 bg-muted/20 min-h-0 items-center overflow-auto">
+    <div className="flex flex-col flex-1 w-full p-10 bg-muted/20 items-center">
       <div className="py-24 max-w-3xl w-full">
         <Link 
           href="/announcements" 
@@ -181,7 +218,7 @@ export default function EditAnnouncementPage() {
                 name="categories"
                 validators={{
                   onChange: ({ value }) => {
-                    const result = z.array(announcementCategorySchema).min(1, "At least one category is required").safeParse(value)
+                    const result = z.array(z.any()).min(1, "At least one category is required").safeParse(value)
                     return result.success ? undefined : result.error.issues[0].message
                   },
                 }}
@@ -191,22 +228,24 @@ export default function EditAnnouncementPage() {
                     <FieldLabel>Categories</FieldLabel>
                     <Combobox
                       multiple
-                      value={field.state.value}
-                      onValueChange={(val) => field.handleChange(val as AnnouncementCategory[])}
+                      value={field.state.value || []}
+                      onValueChange={(val) => field.handleChange(val as Category[])}
                     >
                       <ComboboxChips ref={anchor} className="bg-muted/30">
-                        {field.state.value.map((cat) => (
-                          <ComboboxChip key={cat}>
-                            {cat}
+                        {(field.state.value || []).map((cat) => (
+                          <ComboboxChip key={cat?.id}>
+                            {cat?.name}
                           </ComboboxChip>
                         ))}
-                        <ComboboxChipsInput placeholder="Select categories..." />
+                        <ComboboxChipsInput 
+                          placeholder={isLoadingCategories ? "Loading categories..." : "Select categories..."} 
+                        />
                       </ComboboxChips>
                       <ComboboxContent anchor={anchor}>
                         <ComboboxList>
-                          {categories.map((category) => (
-                            <ComboboxItem key={category} value={category}>
-                              {category}
+                          {categoriesData?.map((category) => (
+                            <ComboboxItem key={category.id} value={category}>
+                              {category.name}
                             </ComboboxItem>
                           ))}
                         </ComboboxList>
@@ -257,15 +296,20 @@ export default function EditAnnouncementPage() {
               Cancel
             </Button>
             <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
+              selector={(state) => [state.canSubmit]}
             >
-              {([canSubmit, isSubmitting]) => (
+              {([canSubmit]) => (
                 <Button 
                   type="submit" 
-                  disabled={!canSubmit} 
+                  disabled={!canSubmit || updateAnnouncement.isPending} 
                   className="min-w-24 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  {isSubmitting ? "Publishing..." : "Publish"}
+                  {updateAnnouncement.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Publishing...
+                    </>
+                  ) : "Publish"}
                 </Button>
               )}
             </form.Subscribe>

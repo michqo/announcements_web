@@ -3,6 +3,7 @@ import { Lato, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Providers } from "@/components/providers";
 
 const lato = Lato({
   weight: ["100", "300", "400", "700", "900"],
@@ -32,15 +33,17 @@ export default function RootLayout({
         className={`${lato.className} ${geistMono.variable} antialiased`}
       >
         <SidebarProvider>
-          <AppSidebar />
-          <main className="flex-1 flex flex-col min-h-svh overflow-hidden">
-            <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
-              <SidebarTrigger className="-ml-1" />
-            </header>
-            <div className="flex-1 flex flex-col overflow-auto">
-              {children}
-            </div>
-          </main>
+          <Providers>
+            <AppSidebar />
+            <main className="flex-1 flex flex-col h-svh overflow-hidden">
+              <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
+                <SidebarTrigger className="-ml-1" />
+              </header>
+              <div className="flex-1 flex flex-col overflow-auto">
+                {children}
+              </div>
+            </main>
+          </Providers>
         </SidebarProvider>
       </body>
     </html>

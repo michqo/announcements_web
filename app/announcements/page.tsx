@@ -1,49 +1,15 @@
-import { announcementSchema, Announcement } from "./schema"
+"use client"
+
 import { columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
-
-// Mock data that would normally come from an API or database
-const mockData: Announcement[] = [
-  {
-    id: "1",
-    title: "New Playground in City Center",
-    content: "We are excited to announce the opening of a new modern playground in the heart of the city center.",
-    publicationDate: new Date(2024, 4, 15, 10, 30),
-    lastUpdate: new Date(2024, 4, 15, 10, 30),
-    categories: ["city", "kids & family"],
-  },
-  {
-    id: "2",
-    title: "Upcoming Community Festival",
-    content: "Join us for our annual community festival with live music, food stalls, and family activities.",
-    publicationDate: new Date(2024, 4, 10, 9, 0),
-    lastUpdate: new Date(2024, 4, 12, 14, 45),
-    categories: ["community events", "culture"],
-  },
-  {
-    id: "3",
-    title: "Annual Health Checkup Campaign",
-    content: "Take control of your health with our free annual checkup campaign available for all city residents.",
-    publicationDate: new Date(2024, 4, 5, 8, 15),
-    lastUpdate: new Date(2024, 4, 5, 8, 15),
-    categories: ["health", "for seniors"],
-  },
-  {
-    id: "4",
-    title: "Emergency Road Maintenance",
-    content: "Please be aware of emergency road maintenance on Main Street this weekend. Expect delays.",
-    publicationDate: new Date(2024, 4, 1, 16, 20),
-    lastUpdate: new Date(2024, 4, 2, 9, 10),
-    categories: ["emergencies", "city"],
-  },
-]
-
-// Validate mock data using zod
-const validatedData = mockData.map((item) => announcementSchema.parse(item))
+import { useAnnouncements } from "@/hooks/use-announcements"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function AnnouncementPage() {
+  const { data: announcements, isLoading, isError } = useAnnouncements()
+
   return (
-    <div className="flex flex-col flex-1 w-full p-10 bg-muted/20 min-h-0 overflow-auto">
+    <div className="flex flex-col flex-1 w-full p-10 bg-muted/20">
       <div className="py-24">
         <h1 className="text-4xl font-extrabold tracking-tight">Announcements</h1>
         <p className="text-muted-foreground mt-2 text-lg">
@@ -51,7 +17,21 @@ export default function AnnouncementPage() {
         </p>
       </div>
       <div className="flex-1 bg-background p-4 rounded-xl shadow-sm border border-border/50">
-        <DataTable columns={columns} data={validatedData} />
+        {isLoading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ) : isError ? (
+          <div className="text-destructive text-center py-10">
+            Could not load announcements. Please make sure the API is running at http://localhost:8000
+          </div>
+        ) : (
+          <DataTable columns={columns} data={announcements || []} />
+        )}
       </div>
     </div>
   )

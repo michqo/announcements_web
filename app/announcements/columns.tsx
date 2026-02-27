@@ -5,9 +5,16 @@ import { format } from "date-fns"
 import { Pencil } from "lucide-react"
 import Link from "next/link"
 
-import { Announcement } from "./schema"
+import { Announcement, Category } from "./schema"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+
+const formatSafeDate = (date: any) => {
+  if (!date) return "N/A"
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return "Invalid date"
+  return format(d, "MM/dd/yyyy HH:mm")
+}
 
 export const columns: ColumnDef<Announcement>[] = [
   {
@@ -23,28 +30,26 @@ export const columns: ColumnDef<Announcement>[] = [
     accessorKey: "publicationDate",
     header: "Publication date",
     cell: ({ row }) => {
-      const date = row.getValue("publicationDate") as Date
-      return <div className="text-muted-foreground">{format(date, "MM/dd/yyyy HH:mm")}</div>
+      return <div className="text-muted-foreground">{formatSafeDate(row.getValue("publicationDate"))}</div>
     },
   },
   {
     accessorKey: "lastUpdate",
     header: "Last Update",
     cell: ({ row }) => {
-      const date = row.getValue("lastUpdate") as Date
-      return <div className="text-muted-foreground">{format(date, "MM/dd/yyyy HH:mm")}</div>
+      return <div className="text-muted-foreground">{formatSafeDate(row.getValue("lastUpdate"))}</div>
     },
   },
   {
     accessorKey: "categories",
     header: "Categories",
     cell: ({ row }) => {
-      const categories = row.getValue("categories") as string[]
+      const categories = row.getValue("categories") as Category[]
       return (
         <div className="flex flex-wrap gap-1">
-          {categories.map((category) => (
-            <Badge key={category} variant="secondary">
-              {category}
+          {categories?.map((category) => (
+            <Badge key={category.id} variant="secondary">
+              {category.name}
             </Badge>
           ))}
         </div>
