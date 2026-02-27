@@ -49,7 +49,7 @@ export const columns: ColumnDef<Announcement>[] = [
         <div className="flex flex-wrap gap-1">
           {categories?.map((category) => (
             <Badge key={category.id} variant="secondary">
-              {category.name}
+              {category.displayName}
             </Badge>
           ))}
         </div>

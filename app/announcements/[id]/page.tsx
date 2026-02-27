@@ -61,8 +61,6 @@ export default function EditAnnouncementPage() {
         : "",
     },
     onSubmit: async ({ value }) => {
-      // The server expects category IDs as numbers and dates as ISO strings
-      // We cast to any to avoid conflict with the Announcement schema which expects full objects and Date objects
       await updateAnnouncement.mutateAsync({
         id: id as string,
         ...value,
@@ -234,7 +232,7 @@ export default function EditAnnouncementPage() {
                       <ComboboxChips ref={anchor} className="bg-muted/30">
                         {(field.state.value || []).map((cat) => (
                           <ComboboxChip key={cat?.id}>
-                            {cat?.name}
+                            {cat?.displayName}
                           </ComboboxChip>
                         ))}
                         <ComboboxChipsInput 
@@ -245,7 +243,7 @@ export default function EditAnnouncementPage() {
                         <ComboboxList>
                           {categoriesData?.map((category) => (
                             <ComboboxItem key={category.id} value={category}>
-                              {category.name}
+                              {category.displayName}
                             </ComboboxItem>
                           ))}
                         </ComboboxList>

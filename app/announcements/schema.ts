@@ -3,6 +3,7 @@ import { z } from "zod"
 export const categorySchema = z.object({
   id: z.union([z.string(), z.number()]),
   name: z.string(),
+  displayName: z.string(),
 })
 
 export type Category = z.infer<typeof categorySchema>
